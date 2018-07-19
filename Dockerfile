@@ -59,7 +59,7 @@ RUN set -ex \
     && pip install pyOpenSSL \
     && pip install ndg-httpsclient \
     && pip install pyasn1 \
-    && pip install apache-airflow[crypto,celery,postgres,hive,jdbc,mysql]==$AIRFLOW_VERSION \
+    && pip install docker \
     && pip install celery[redis]==4.1.1 \
     && apt-get purge --auto-remove -yqq $buildDeps \
     && apt-get autoremove -yqq --purge \
@@ -71,6 +71,19 @@ RUN set -ex \
         /usr/share/man \
         /usr/share/doc \
         /usr/share/doc-base
+
+RUN apt-get -y update
+RUN apt-get -y install git-core
+RUN apt-get -y install gcc make
+RUN git clone https://github.com/apache/incubator-airflow.git \
+    && cd incubator-airflow \
+    && git checkout v1-10-stable \
+    && python setup.py install
+RUN pip install psycopg2-binary
+
+RUN apt-get -y remove gcc make git-core
+RUN rm -rf /var/lib/apt/lists/*
+RUN mkdir -p ${AIRFLOW_HOME}/logs
 
 COPY script/entrypoint.sh /entrypoint.sh
 COPY config/airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
