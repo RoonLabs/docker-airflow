@@ -77,7 +77,7 @@ RUN apt-get -y install git-core
 RUN apt-get -y install gcc make
 RUN git clone https://github.com/apache/incubator-airflow.git \
     && cd incubator-airflow \
-    && git checkout v1-10-stable \
+    && git checkout ${AIRFLOW_VERSION} \
     && python setup.py install
 RUN pip install psycopg2-binary
 
@@ -88,6 +88,7 @@ RUN mkdir -p ${AIRFLOW_HOME}/logs
 COPY script/entrypoint.sh /entrypoint.sh
 COPY config/airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
 
+RUN ln -s /usr/local/airflow/gitrepo/plugins /usr/local/airflow/plugins
 RUN chown -R airflow: ${AIRFLOW_HOME}
 
 EXPOSE 8080 5555 8793
